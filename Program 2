@@ -1,0 +1,98 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+    char ch;
+    int freq;
+    int left, right;
+};
+
+void printCode(Node tree[], int root,
+               char code[], int top,
+               long long& totalBits) {
+
+    if (tree[root].left == -1 &&
+        tree[root].right == -1) {
+
+        code[top] = '\0';
+
+        cout << tree[root].ch << " : " << code << endl;
+
+        totalBits += 1LL * tree[root].freq * top;
+        return;
+    }
+
+    code[top] = '0';
+
+    printCode(tree, tree[root].left,
+              code, top + 1, totalBits);
+
+    code[top] = '1';
+
+    printCode(tree, tree[root].right,
+              code, top + 1, totalBits);
+}
+
+int main() {
+    const int n = 9;
+    const int maxNodes = 2 * n - 1;
+
+    char letters[n] = {
+        'a', 'c', 'd', 'e', 'o',
+        'm', 's', 't', 'u'
+    };
+
+    int freq[n] = {20, 11, 2, 10, 15, 8, 10, 22, 2};
+
+    Node tree[maxNodes];
+    bool used[maxNodes] = {};
+
+    for (int i = 0; i < n; i++) {
+        tree[i].ch = letters[i];
+        tree[i].freq = freq[i];
+        tree[i].left = -1;
+        tree[i].right = -1;
+    }
+
+    for (int i = n; i < maxNodes; i++) {
+        int x = -1, y = -1;
+
+        for (int j = 0; j < i; j++) {
+            if (used[j]) {
+                continue;
+            }
+
+            if (x == -1 || tree[j].freq < tree[x].freq) {
+                y = x;
+                x = j;
+            }
+            else if (y == -1 || tree[j].freq < tree[y].freq) {
+                y = j;
+            }
+        }
+
+        used[x] = true;
+        used[y] = true;
+
+        tree[i].ch = '*';
+        tree[i].freq = tree[x].freq + tree[y].freq;
+        tree[i].left = x;
+        tree[i].right = y;
+    }
+
+    char code[maxNodes];
+    long long totalBits = 0;
+
+    cout << "Huffman Codes:\n";
+
+    printCode(tree, maxNodes - 1,
+              code, 0, totalBits);
+
+    cout << "\nWeighted bits = " << totalBits << endl;
+    cout << "Total bits in file = " << totalBits * 100 << endl;
+
+    cout << "Memory in bytes = "
+         << (totalBits * 100 + 7) / 8 << endl;
+
+    return 0;
+}
